@@ -17,7 +17,12 @@
 
 const express = require("express");
 const bodyParser = require("body-parser");
-const { request, response } = require("express");
+
+// config database
+const dbConfig = require("./config/database.config");
+const mongoose = require("mongodb");
+
+mongoose.Promise = global.Promise;
 
 const PORT = process.env.PORT || 8080;
 
@@ -42,12 +47,29 @@ router.get("/", (request, response) => {
   });
 });
 
+// Connecting to the Database
+
+mongoose
+  .connect(dbConfig.url, {
+    useNewUrlParser: true,
+  })
+  .then(() => {
+    console.log("***********************************************");
+    console.log("Successfully connected to the Database");
+    console.log("***********************************************");
+  })
+  .catch((err) => {
+    console.error("Not able to connect due to following error");
+    console.error(err);
+    process.exit();
+  });
+
 // Register our router
 app.use("/api", router);
 
 // Start the Server
 app.listen(PORT, () => {
-  console.log("###########################################");
+  console.log("***********************************************");
   console.log("Yesss!!! Server is started on port " + PORT);
-  console.log("###########################################");
+  console.log("***********************************************");
 });
