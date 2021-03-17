@@ -17,59 +17,51 @@
 
 const express = require("express");
 const bodyParser = require("body-parser");
+const PORT = process.env.PORT || 8080;
 
-// config database
-const dbConfig = require("./config/database.config");
-const mongoose = require("mongodb");
+// create express app
+const app = express();
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// parse application/json
+app.use(bodyParser.json());
+
+// Configuring the database
+const dbConfig = require("./config/database.config.js");
+const mongoose = require("mongoose");
+const { prependListener } = require("./model/note.model.js");
 
 mongoose.Promise = global.Promise;
 
-const PORT = process.env.PORT || 8080;
-
-// create and express app
-const app = express();
-
-// parse request of content-type - application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// parse request of content-type - application/json
-
-app.use(bodyParser.json());
-
-// create express router
-const router = express.Router();
-
-// for testing define the simple router here
-
-router.get("/", (request, response) => {
-  response.status(200).json({
-    message: "Welcome to Easy Notes Application",
-  });
-});
-
-// Connecting to the Database
-
+// Connecting to the database
 mongoose
   .connect(dbConfig.url, {
     useNewUrlParser: true,
   })
   .then(() => {
-    console.log("***********************************************");
-    console.log("Successfully connected to the Database");
-    console.log("***********************************************");
+    console.log("---------------------------------------");
+    console.log("Successfully connected to the database");
   })
   .catch((err) => {
-    console.error("Not able to connect due to following error");
-    console.error(err);
+    console.log("---------------------------------------");
+    console.log("Could not connect to the database. Exiting now...", err);
     process.exit();
   });
 
-// Register our router
-app.use("/api", router);
+// define a simple route
+app.get("/", (req, res) => {
+  res.json({
+    message:
+      "Welcome to EasyNotes application. Take notes quickly. Organize and keep track of all your notes.",
+  });
+});
 
-// Start the Server
+require("./app/note.route")(app);
+
+// listen for requests
 app.listen(PORT, () => {
-  console.log("***********************************************");
-  console.log("Yesss!!! Server is started on port " + PORT);
-  console.log("***********************************************");
+  console.log("---------------------------------------");
+  console.log("Server is listening on port " + PORT);
 });
